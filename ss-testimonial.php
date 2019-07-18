@@ -16,17 +16,19 @@ class SS_Testimonial {
 
 	protected static $instance = null;
 
-	private $nameErr = "";
-	private $emailErr = "";
-	private $phoneErr = "";
-	private $testimonialErr = "";
+	// private $nameErr = "";
+	// private $emailErr = "";
+	// private $phoneErr = "";
+	// private $testimonialErr = "";
+
+	private $error_message;
 
 	private $fname = "";
 	private $email = "";
 	private $phone = "";
 	private $testimonial = "";
 
-	private $sumErr = 0;
+	private $error_presence = 0;
 
 	public function __construct() {
 		
@@ -79,49 +81,49 @@ class SS_Testimonial {
 			//$nameErr = $emailErr = $phoneErr = $testimonialErr = "";
 			$fname = $email = $phone = $testimonial = array();
 
-			$sumErr = 0;
+			$error_presence = 0;
 
 			if (empty($_POST["ts-name"])) {
-				$fname = "Name is required";
-				$sumErr = 1;
+				$error_message['name'] = "Name is required";
+				$error_presence = 1;
 			} else {
 				$fname = sanitize_text_field($_POST["ts-name"]);
 				if (!preg_match("/^[a-zA-Z ]*$/",$fname)) {
-					$fname = "Only letters and white space allowed";
-					$sumErr = 1;
+					$error_message['name'] = "Only letters and white space allowed";
+					$error_presence = 1;
 				}
 			}
 
 			if (empty($_POST["ts-email"])) {
-				$emailErr = "Email is required";
-				$sumErr = 1;
+				$error_message['email'] = "Email is required";
+				$error_presence = 1;
 			} else {
 				$email = sanitize_text_field($_POST["ts-email"]);
 				if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-					$emailErr = "Invalid email format";
-					$sumErr = 1;
+					$error_message['email'] = "Invalid email format";
+					$error_presence = 1;
 				}
 			}
 
 			if (empty($_POST["ts-phone-number"])) {
-				$phoneErr = "Phone is required";
-				$sumErr = 1;
+				$error_message['phone'] = "Phone is required";
+				$error_presence = 1;
 			} else {
 				$phone = sanitize_text_field($_POST["ts-phone-number"]);
 				if (!preg_match("/^[0-9 ]*$/",$phone)) {
-					$nameErr = "Only numbers allowed";
-					$sumErr = 1;
+					$error_message['phone'] = "Only numbers allowed";
+					$error_presence = 1;
 				}
 			}
 
 			if (empty($_POST["ts-testimonial"])) {
-				$testimonialErr = "Testimonial is required";
-				$sumErr = 1;
+				$error_message['testimonial'] = "Testimonial is required";
+				$error_presence = 1;
 			} else {
 				$testimonial = sanitize_text_field($_POST["ts-testimonial"]);
 			}
 
-			if ($sumErr == 0) {
+			if ($error_presence == 0) {
 
 				global $wpdb;
 
@@ -139,7 +141,7 @@ class SS_Testimonial {
 				);
 
 				$fname = $email = $phone = $testimonial = "";
-				$nameErr = $emailErr = $phoneErr = $testimonialErr = "";
+				$error_message = "";
 
 			} else {
 
@@ -148,10 +150,10 @@ class SS_Testimonial {
 				$this->phone = $phone;
 				$this->testimonial = $testimonial;
 
-				$this->nameErr = $nameErr;
-				$this->emailErr = $emailErr;
-				$this->phoneErr = $phoneErr;
-				$this->testimonialErr = $testimonialErr;
+				$this->error_message['name'] = $error_message['name'];
+				$this->error_message['email'] = $error_message['email'];
+				$this->error_message['phone'] = $error_message['phone'];
+				$this->error_message['testimonial'] = $error_message['testimonial'];
 
 			}
 		}
@@ -162,22 +164,25 @@ class SS_Testimonial {
 	 */
 	public function html_form_code() {
 
+		var_dump($this->error_message);
+		var_dump($this->fname);
+
 		echo '<form action="' . esc_url($_SERVER['REQUEST_URI']) . '" method="post">';
 		echo '<p>';
 		echo 'Your Name (required) <br />';
-		echo '<input type="text" name="ts-name" pattern="[a-zA-Z0-9 ]+" value="' . $this->fname . '" size="40" /><span class="error"/>' . $this->nameErr . '</span>';
+		echo '<input type="text" name="ts-name" pattern="[a-zA-Z0-9 ]+" value="' . $this->fname . '" size="40" /><span class="error"/>' . ((isset( $this->error_message['name'] )) ? $this->error_message['name'] : '' ) . '</span>';
 		echo '</p>';
 		echo '<p>';
 		echo 'Your Email (required) <br />';
-		echo '<input type="email" name="ts-email" value="' . $this->email . '" size="40" /><span class="error"/>' . $this->emailErr . '</span>';
+		echo '<input type="email" name="ts-email" value="' . $this->email . '" size="40" /><span class="error"/>' . ((isset( $this->error_message['email'] )) ? $this->error_message['email'] : '' ) . '</span>';
 		echo '</p>';
 		echo '<p>';
 		echo 'Phone Number (required) <br />';
-		echo '<input type="tel" name="ts-phone-number" value="' . $this->phone . '" size="40" /><span class="error"/>' . $this->phoneErr . '</span>';
+		echo '<input type="tel" name="ts-phone-number" value="' . $this->phone . '" size="40" /><span class="error"/>' . ((isset( $this->error_message['phone'] )) ? $this->error_message['phone'] : '' ) . '</span>';
 		echo '</p>';
 		echo '<p>';
 		echo 'Your Testimonial (required) <br />';
-		echo '<textarea rows="10" cols="35" name="ts-testimonial">' . $this->testimonial . '</textarea><span class="error"/>' . $this->testimonialErr . '</span>';
+		echo '<textarea rows="10" cols="35" name="ts-testimonial">' . $this->testimonial . '</textarea><span class="error"/>' . ((isset( $this->error_message['testimonial'] )) ? $this->error_message['testimonial'] : '' ) . '</span>';
 		echo '</p>';
 		echo '<p><input type="submit" name="ts-submitted" value="Send"/></p>';
 		echo '</form>';
